@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:wetherapp/BillingPage.dart';
 import 'package:wetherapp/login_page.dart';
+import 'package:wetherapp/salalabillui.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +22,9 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const LoginPage(),
+      home://SalalaBillPage(),
+      BillingPage(),
+      //const LoginPage(),
     );
   }
 }

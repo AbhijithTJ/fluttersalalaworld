@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wetherapp/salalabillui.dart';
 import './BarcodeScannerPage.dart';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 
 class BillingPage extends StatefulWidget {
   const BillingPage({Key? key}) : super(key: key);
@@ -19,6 +14,7 @@ class _BillingPageState extends State<BillingPage> {
 
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController customerAddressController = TextEditingController();
+  final TextEditingController customerPhoneNumberController = TextEditingController();
   final TextEditingController billNoController = TextEditingController();
   final TextEditingController headphoneModelController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
@@ -27,76 +23,7 @@ class _BillingPageState extends State<BillingPage> {
   final TextEditingController priceController = TextEditingController();
 
 
-  //pdf view
-
-  Future<void> generateBillPdf({
-    required String customerName,
-    required String customerAddress,
-    required String billNo,
-    required String invoiceNo,
-    required String headphoneModel,
-    required String date,
-    required String imei,
-    required double price,
-  }) async {
-    final pdf = pw.Document();
-
-    // Load background template image
-    final bgImage = pw.MemoryImage(
-      (await rootBundle.load('assets/images/blank_salala_bill.png')).buffer.asUint8List(),
-    );
-
-    // Calculate tax
-    double taxableAmount = price / 1.18;
-    double cgst = taxableAmount * 0.09;
-    double sgst = taxableAmount * 0.09;
-
-    // Convert price to words
-    String amountInWords = convertNumberToWords(price.round());
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (context) {
-          return pw.Stack(
-            children: [
-              pw.Positioned(child: pw.Image(bgImage, fit: pw.BoxFit.cover)),
-
-              // Shop Info (Fixed)
-              pw.Positioned(left: 75, top: 90, child: pw.Text('Near supplyco, Meenangadi, 673591', style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 275, top: 90, child: pw.Text('8147668045\n7901753565', style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 475, top: 90, child: pw.Text('N/A', style: pw.TextStyle(fontSize: 10))), // Headphone model can also go here
-
-              // Dynamic User Info
-              pw.Positioned(left: 75, top: 130, child: pw.Text(customerAddress, style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 275, top: 130, child: pw.Text(billNo, style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 475, top: 130, child: pw.Text(date, style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 475, top: 150, child: pw.Text(invoiceNo, style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 275, top: 150, child: pw.Text(headphoneModel, style: pw.TextStyle(fontSize: 10))),
-
-              // Table Row - Item
-              pw.Positioned(left: 35, top: 235, child: pw.Text('1', style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 70, top: 235, child: pw.Text(headphoneModel, style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 210, top: 235, child: pw.Text(price.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 285, top: 235, child: pw.Text('0', style: pw.TextStyle(fontSize: 10))), // Discount
-              pw.Positioned(left: 355, top: 235, child: pw.Text(cgst.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 435, top: 235, child: pw.Text(sgst.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10))),
-              pw.Positioned(left: 515, top: 235, child: pw.Text(price.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10))),
-
-              // Total
-              pw.Positioned(left: 515, top: 310, child: pw.Text(price.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10))),
-
-              // Grand Total in Words
-              pw.Positioned(left: 75, top: 650, child: pw.Text(amountInWords.toUpperCase(), style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold))),
-            ],
-          );
-        },
-      ),
-    );
-
-    // Preview & Print
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-  }
+  
 
 
   // amount convert into words
@@ -165,6 +92,9 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   void _submitForm() {
+    // Explicitly unfocus any active text field before processing the form
+    FocusManager.instance.primaryFocus?.unfocus();
+
     if (_formKey.currentState!.validate()) {
       double totalPrice = double.tryParse(priceController.text) ?? 0;
       double taxableAmount = totalPrice / 1.18;
@@ -190,6 +120,14 @@ class _BillingPageState extends State<BillingPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text('Customer Name: ${customerNameController.text}'),
+              Text('Customer Address: ${customerAddressController.text}'),
+              Text('Customer Phone: ${customerPhoneNumberController.text}'),
+              Text('Bill No: ${billNoController.text}'),
+              Text('Invoice No: ${invoiceNoController.text}'),
+              Text('Headphone Model: ${headphoneModelController.text}'),
+              Text('Date: ${dateController.text}'),
+              Text('IMEI: ${imeiNoController.text}'),
               Text('Total Price: ₹${totalPrice.toStringAsFixed(2)}'),
               Text('Taxable Value: ₹${taxableAmount.toStringAsFixed(2)}'),
               Text('CGST (9%): ₹${cgst.toStringAsFixed(2)}'),
@@ -201,26 +139,31 @@ class _BillingPageState extends State<BillingPage> {
           actions: [
             TextButton(
               child: const Text('OK'),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Navigator.pop(context); // Close the dialog
+                await Future.delayed(const Duration(milliseconds: 100)); // Small delay
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SalalaBillPage(
+                  customerName: customerNameController.text,
+                  customerAddress: customerAddressController.text,
+                  customerPhoneNumber: customerPhoneNumberController.text,
+                  billNo: billNoController.text,
+                  invoiceNo: invoiceNoController.text,
+                  headphoneModel: headphoneModelController.text,
+                  date: dateController.text,
+                  imeiNo: imeiNoController.text,
+                  totalPrice: totalPrice,
+                  taxableAmount: taxableAmount,
+                  cgst: cgst,
+                  sgst: sgst,
+                  amountInWords: amountInWords,
+                ))); // Navigate to next page
+              },
             ),
           ],
         ),
       );
     }
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>SalalaBillPage(), ));
-    //calling pdf
-    generateBillPdf(
-      customerName: customerNameController.text,
-      customerAddress: customerAddressController.text,
-      billNo: billNoController.text,
-      invoiceNo: invoiceNoController.text,
-      headphoneModel: headphoneModelController.text,
-      date: dateController.text,
-      imei: imeiNoController.text,
-      price: double.tryParse(priceController.text) ?? 0.0,
-    );
-
-
   }
 
 
@@ -302,8 +245,14 @@ class _BillingPageState extends State<BillingPage> {
                     controller: customerAddressController,
                   ),
                   _buildTextField(
+                    label: 'Customer Mobile Number',
+                    icon: Icons.phone,
+                    controller: customerPhoneNumberController,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  _buildTextField(
                     label: 'Headphone Model',
-                    icon: Icons.headphones,
+                    icon: Icons.phone_android,
                     controller: headphoneModelController,
                   ),
 
