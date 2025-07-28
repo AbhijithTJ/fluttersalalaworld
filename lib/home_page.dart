@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'BillingPage.dart';
+import 'CustomerSearchPage.dart';
+import 'ProductManagementPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,7 +68,9 @@ class _HomePageState extends State<HomePage> {
                 subtitle: 'Search and manage your customers.',
                 color: Colors.orange.shade700,
                 onTap: () {
-                  // TODO: Navigate to the Customer Details page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const CustomerSearchPage()),
+                  );
                 },
               ),
               const SizedBox(height: 16),
@@ -77,7 +81,9 @@ class _HomePageState extends State<HomePage> {
                 subtitle: 'Add, update, or remove items.',
                 color: Colors.green.shade600,
                 onTap: () {
-                  // TODO: Navigate to the Products page
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const ProductManagementPage()),
+                  );
                 },
               ),
             ],
