@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:wetherapp/BillingPage.dart';
 import 'package:wetherapp/login_page.dart';
 import 'package:wetherapp/salalabillui.dart';
+ import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Important
   runApp(const MyApp());
 }
 

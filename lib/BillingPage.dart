@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:wetherapp/salalabillui.dart';
 import './BarcodeScannerPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wetherapp/services/number_generator_service.dart';
 
 class BillingPage extends StatefulWidget {
   const BillingPage({Key? key}) : super(key: key);
@@ -11,6 +13,7 @@ class BillingPage extends StatefulWidget {
 
 class _BillingPageState extends State<BillingPage> {
   final _formKey = GlobalKey<FormState>();
+  final NumberGeneratorService _numberGeneratorService = NumberGeneratorService();
 
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController customerAddressController = TextEditingController();
@@ -22,11 +25,34 @@ class _BillingPageState extends State<BillingPage> {
   final TextEditingController imeiNoController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _generateNumbers();
+  }
+
+  Future<void> _generateNumbers() async {
+    try {
+      int nextBillNo = await _numberGeneratorService.getNextNumber('bill_number');
+      int nextInvoiceNo = await _numberGeneratorService.getNextNumber('invoice_number');
+
+      setState(() {
+        billNoController.text = nextBillNo.toString();
+        invoiceNoController.text = 'H' + nextInvoiceNo.toString();
+      });
+    } catch (e) {
+      print('Error generating numbers: $e');
+      // Handle error, e.g., show a snackbar or alert
+    }
+  }
+
 
   
 
 
   // amount convert into words
+
+  
 
   String convertNumberToWords(int number) {
     if (number == 0) return 'Zero Rupees Only';
@@ -91,7 +117,7 @@ class _BillingPageState extends State<BillingPage> {
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     // Explicitly unfocus any active text field before processing the form
     FocusManager.instance.primaryFocus?.unfocus();
 
@@ -111,6 +137,32 @@ class _BillingPageState extends State<BillingPage> {
       print("CGST (9%): ₹${cgst.toStringAsFixed(2)}");
       print("SGST (9%): ₹${sgst.toStringAsFixed(2)}");
       print("Amount in Words: $amountInWords");
+
+      // Prepare data for Firestore
+      Map<String, dynamic> billingData = {
+        'customerName': customerNameController.text,
+        'customerAddress': customerAddressController.text,
+        'customerPhoneNumber': customerPhoneNumberController.text,
+        'billNo': billNoController.text,
+        'invoiceNo': invoiceNoController.text,
+        'headphoneModel': headphoneModelController.text,
+        'date': dateController.text,
+        'imeiNo': imeiNoController.text,
+        'totalPrice': totalPrice,
+        'taxableAmount': taxableAmount,
+        'cgst': cgst,
+        'sgst': sgst,
+        'amountInWords': amountInWords,
+        'timestamp': FieldValue.serverTimestamp(), // Add a timestamp
+      };
+
+      // Send data to Firestore
+      try {
+        await FirebaseFirestore.instance.collection('bills').add(billingData);
+        print('Billing data successfully sent to Firestore!');
+      } catch (e) {
+        print('Error sending billing data to Firestore: $e');
+      }
 
       showDialog(
         context: context,
@@ -169,18 +221,22 @@ class _BillingPageState extends State<BillingPage> {
 
 
   Widget _buildTextField({
+    Key? key,
     required String label,
     required IconData icon,
     required TextEditingController controller,
     TextInputType keyboardType = TextInputType.text,
     VoidCallback? onTap,
+    bool readOnly = false,
   }) {
     return Padding(
+      key: key,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         onTap: onTap,
+        readOnly: readOnly,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
@@ -228,11 +284,13 @@ class _BillingPageState extends State<BillingPage> {
                     icon: Icons.receipt,
                     controller: billNoController,
                     keyboardType: TextInputType.number,
+                    readOnly: true, // Make read-only
                   ),
                   _buildTextField(
                     label: 'Invoice Number',
                     icon: Icons.description,
                     controller: invoiceNoController,
+                    readOnly: true, // Make read-only
                   ),
                   _buildTextField(
                     label: 'Customer Name',

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "731167609953",
+    "project_id": "salalaworldapp",
+    "storage_bucket": "salalaworldapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731167609953:android:4aabc0e805bdc759a78620",
+        "android_client_info": {
+          "package_name": "com.example.wetherapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPSWzPMR2pLe2uea9NOlDT4JoAkBhIGvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
