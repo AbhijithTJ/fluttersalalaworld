@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:wetherapp/home_page.dart';
+import 'package:wetherapp/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,10 +11,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -22,12 +25,31 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      // If the form is valid, navigate to the HomePage.
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
+      setState(() {
+        _isLoading = true;
+      });
+      dynamic result = await _auth.signInWithEmailAndPassword(
+        _emailController.text,
+        _passwordController.text,
       );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (result == null || result['user'] == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not sign in with those credentials'),
+            ),
+          );
+        } else {
+          // Optionally, you can print the role for debugging
+          print('User role: ${result['role']}');
+          // Navigation will be handled by the Wrapper widget
+        }
+      }
     }
   }
 
@@ -167,7 +189,11 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
             ),
-            child: const Text('Login'),
+            child: _isLoading
+                ? const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  )
+                : const Text('Login'),
           ),
         ],
       ),

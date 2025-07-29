@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:wetherapp/BillingPage.dart';
-import 'package:wetherapp/home_page.dart';
-import 'package:wetherapp/login_page.dart';
-import 'package:wetherapp/salalabillui.dart';
- import 'package:firebase_core/firebase_core.dart';
+import 'package:wetherapp/wrapper.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Important
   runApp(const MyApp());
@@ -15,7 +11,6 @@ void main() async{
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,10 +22,7 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home:HomePage(),
-      //SalalaBillPage(),
-     // BillingPage(),
-      //const LoginPage(),
+      home: const Wrapper(),
     );
   }
 }

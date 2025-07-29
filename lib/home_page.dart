@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'BillingPage.dart';
 import 'CustomerSearchPage.dart';
 import 'ProductManagementPage.dart';
+import 'package:wetherapp/services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String userName;
+  const HomePage({super.key, required this.userName});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -23,10 +25,10 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () {
-              // TODO: Navigate to profile page
+            onPressed: () async {
+              await AuthService().signOut();
             },
-            icon: const Icon(Icons.person_outline_rounded),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),
@@ -37,7 +39,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome, Abhijith!', // Personalized greeting
+                'Welcome, ${widget.userName}!', // Personalized greeting
                 style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
