@@ -71,8 +71,8 @@ flutter:
   # https://flutter.dev/to/resolution-aware-images
   
   assets:
-    - assets/
-    - assets/images/blank_salala_bill.png
+    - assets/images/
+    - assets/Ecommerce.json
   fonts:
      - family: Microsoft JhengHei
        fonts:

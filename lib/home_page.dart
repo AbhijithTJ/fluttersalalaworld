@@ -100,52 +100,12 @@ class _HomePageState extends State<HomePage> {
   Widget _buildLogoBanner(ColorScheme colorScheme) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 48.0),
+      height: 176,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            colorScheme.primary.withOpacity(0.25),
-            colorScheme.surfaceVariant.withOpacity(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
-      ),
-      child: Center(child: _buildLogo(colorScheme)),
-    );
-  }
-
-  Widget _buildLogo(ColorScheme colorScheme) {
-    // This widget creates a temporary logo for "Salala World".
-    // You can replace this with your own Image.asset('assets/logo.png') later on.
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.secondary.withOpacity(0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Center(
-        child: Text(
-          'S',
-          style: TextStyle(
-            fontSize: 45,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onPrimary,
-          ),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/tesing.png'),
+          fit: BoxFit.cover,
         ),
       ),
     );

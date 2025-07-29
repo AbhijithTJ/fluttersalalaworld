@@ -192,31 +192,26 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLogo(ColorScheme colorScheme) {
-    // This widget creates a logo for a mobile shop concept.
-    // You can replace this with your own Image.asset('assets/logo.png') later on.
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.secondary.withOpacity(0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Center(
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white, // A white background for the logo
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2), // Subtle shadow
+              blurRadius: 15,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Center(
-        child: Icon(
-          Icons.smartphone,
-          size: 45,
-          color: colorScheme.onPrimary,
+        child: ClipOval(
+          child: Image.asset(
+            'assets/images/logo.jpg',
+            fit: BoxFit.contain, // Ensure the logo fits within the circle
+          ),
         ),
       ),
     );
