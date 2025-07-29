@@ -42,6 +42,26 @@ class AuthService {
     }
   }
 
+    Future<void> deleteProductByImei(String imei) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('imei', isEqualTo: imei)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        String productId = querySnapshot.docs.first.id;
+        await FirebaseFirestore.instance.collection('products').doc(productId).delete();
+        print('Product with IMEI $imei deleted successfully.');
+      } else {
+        print('No product found with IMEI $imei.');
+      }
+    } catch (e) {
+      print('Error deleting product by IMEI: $e');
+    }
+  }
+
   // Sign out
   Future<void> signOut() async {
     try {

@@ -6,7 +6,8 @@ import 'package:wetherapp/services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
   final String userName;
-  const HomePage({super.key, required this.userName});
+  final String role;
+  const HomePage({super.key, required this.userName, required this.role});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -71,23 +72,24 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.orange.shade700,
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const CustomerSearchPage()),
+                    MaterialPageRoute(builder: (context) => CustomerSearchPage(role: widget.role)),
                   );
                 },
               ),
               const SizedBox(height: 16),
-              _buildActionCard(
-                context: context,
-                icon: Icons.inventory_2_outlined,
-                title: 'Manage Products',
-                subtitle: 'Add, update, or remove items.',
-                color: Colors.green.shade600,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const ProductManagementPage()),
-                  );
-                },
-              ),
+              if (widget.role == 'admin')
+                _buildActionCard(
+                  context: context,
+                  icon: Icons.inventory_2_outlined,
+                  title: 'Manage Products',
+                  subtitle: 'Add, update, or remove items.',
+                  color: Colors.green.shade600,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const ProductManagementPage()),
+                    );
+                  },
+                ),
             ],
           ),
         ),

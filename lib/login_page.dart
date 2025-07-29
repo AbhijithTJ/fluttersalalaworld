@@ -171,15 +171,6 @@ class _LoginPageState extends State<LoginPage> {
               return null;
             },
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                // TODO: Implement forgot password functionality
-              },
-              child: const Text('Forgot Password?'),
-            ),
-          ),
           const SizedBox(height: 16.0),
           ElevatedButton(
             onPressed: _login,

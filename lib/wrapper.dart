@@ -36,10 +36,11 @@ class Wrapper extends StatelessWidget {
                 }
                 if (roleAndNameSnapshot.hasData && roleAndNameSnapshot.data != null) {
                   final String? userName = roleAndNameSnapshot.data!['userName'];
-                  return HomePage(userName: userName ?? user.displayName ?? user.email ?? 'User');
+                  final String? role = roleAndNameSnapshot.data!['role'];
+                  return HomePage(userName: userName ?? user.displayName ?? user.email ?? 'User', role: role ?? 'user');
                 }
                 // Fallback if role and name data is not available
-                return HomePage(userName: user.displayName ?? user.email ?? 'User');
+                return HomePage(userName: user.displayName ?? user.email ?? 'User', role: 'user');
               },
             );
           }

@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wetherapp/BillManagementPage.dart';
 
 class CustomerSearchPage extends StatefulWidget {
-  const CustomerSearchPage({Key? key}) : super(key: key);
+  final String role;
+  const CustomerSearchPage({Key? key, required this.role}) : super(key: key);
 
   @override
   State<CustomerSearchPage> createState() => _CustomerSearchPageState();
@@ -263,25 +264,26 @@ class _CustomerSearchPageState extends State<CustomerSearchPage>
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const BillManagementPage()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.manage_search,
-                color: Theme.of(context).colorScheme.primary,
+          if (widget.role == 'admin')
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BillManagementPage()),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.manage_search,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

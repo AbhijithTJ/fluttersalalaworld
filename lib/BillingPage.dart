@@ -3,6 +3,7 @@ import 'package:wetherapp/salalabillui.dart';
 import './BarcodeScannerPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wetherapp/services/number_generator_service.dart';
+import 'package:wetherapp/services/auth_service.dart';
 
 class BillingPage extends StatefulWidget {
   const BillingPage({Key? key}) : super(key: key);
@@ -15,6 +16,8 @@ class _BillingPageState extends State<BillingPage> {
   final _formKey = GlobalKey<FormState>();
   final NumberGeneratorService _numberGeneratorService = NumberGeneratorService();
   bool _isNumberGenerationFailed = false;
+
+  final AuthService _authService = AuthService();
 
   final TextEditingController customerNameController = TextEditingController();
   final TextEditingController customerAddressController = TextEditingController();
@@ -332,6 +335,8 @@ class _BillingPageState extends State<BillingPage> {
       await FirebaseFirestore.instance.collection('bills').add(billingData);
       print('Billing data successfully sent to Firestore!');
       isSuccess = true;
+      // Delete the product from the products collection
+      await _authService.deleteProductByImei(imeiNoController.text);
     } catch (e) {
       print('Error sending billing data to Firestore: $e');
       isSuccess = false;
