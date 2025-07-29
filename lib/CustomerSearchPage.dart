@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wetherapp/BillManagementPage.dart';
 
 class CustomerSearchPage extends StatefulWidget {
   const CustomerSearchPage({Key? key}) : super(key: key);
@@ -262,15 +263,23 @@ class _CustomerSearchPageState extends State<CustomerSearchPage>
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.search,
-              color: Theme.of(context).colorScheme.primary,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BillManagementPage()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.manage_search,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ),
         ],
