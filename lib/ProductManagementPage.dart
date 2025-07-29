@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import './BarcodeScannerPage.dart';
 
 class ProductManagementPage extends StatefulWidget {
   const ProductManagementPage({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
   final TextEditingController _productPriceController = TextEditingController();
   final TextEditingController _productDescriptionController = TextEditingController();
   final TextEditingController _imeiController = TextEditingController();
+  final TextEditingController _imei2Controller = TextEditingController(); // Second IMEI controller
   final TextEditingController _searchController = TextEditingController();
   String _selectedProductType = 'Other'; // 'Mobile' or 'Other'
   
@@ -45,6 +47,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     _productPriceController.dispose();
     _productDescriptionController.dispose();
     _imeiController.dispose();
+    _imei2Controller.dispose(); // Dispose of the second IMEI controller
     _searchController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -99,6 +102,26 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       return;
     }
 
+    // Check if only one IMEI is filled - require both to be filled
+    if (_selectedProductType == 'Mobile') {
+      final imei1Filled = _imeiController.text.trim().isNotEmpty;
+      final imei2Filled = _imei2Controller.text.trim().isNotEmpty;
+      
+      if (imei1Filled && !imei2Filled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill both IMEI numbers')),
+        );
+        return;
+      }
+      
+      if (!imei1Filled && imei2Filled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill both IMEI numbers')),
+        );
+        return;
+      }
+    }
+
     // Check if IMEI already exists for mobile products
     if (_selectedProductType == 'Mobile') {
       final existingProduct = await FirebaseFirestore.instance
@@ -112,6 +135,22 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           const SnackBar(content: Text('A mobile with this IMEI already exists')),
         );
         return;
+      }
+
+      // Also check if second IMEI already exists
+      if (_imei2Controller.text.trim().isNotEmpty) {
+        final existingProduct2 = await FirebaseFirestore.instance
+            .collection('products')
+            .where('type', isEqualTo: 'Mobile')
+            .where('imei2', isEqualTo: _imei2Controller.text.trim())
+            .get();
+        
+        if (existingProduct2.docs.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('A mobile with this second IMEI already exists')),
+          );
+          return;
+        }
       }
     }
 
@@ -131,6 +170,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
 
       if (_selectedProductType == 'Mobile') {
         productData['imei'] = _imeiController.text.trim();
+        productData['imei2'] = _imei2Controller.text.trim(); // Add second IMEI
         productData['model'] = _productNameController.text.trim(); // Store as model for mobiles
       } else {
         productData['description'] = _productDescriptionController.text.trim();
@@ -142,6 +182,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       _productPriceController.clear();
       _productDescriptionController.clear();
       _imeiController.clear();
+      _imei2Controller.clear(); // Clear the second IMEI controller
       _selectedProductType = 'Other';
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -182,6 +223,26 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       return;
     }
 
+    // Check if only one IMEI is filled - require both to be filled
+    if (_selectedProductType == 'Mobile') {
+      final imei1Filled = _imeiController.text.trim().isNotEmpty;
+      final imei2Filled = _imei2Controller.text.trim().isNotEmpty;
+      
+      if (imei1Filled && !imei2Filled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill both IMEI numbers')),
+        );
+        return;
+      }
+      
+      if (!imei1Filled && imei2Filled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill both IMEI numbers')),
+        );
+        return;
+      }
+    }
+
     // Check if IMEI already exists for mobile products (excluding current product)
     if (_selectedProductType == 'Mobile') {
       final existingProduct = await FirebaseFirestore.instance
@@ -216,6 +277,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
 
       if (_selectedProductType == 'Mobile') {
         updateData['imei'] = _imeiController.text.trim();
+        updateData['imei2'] = _imei2Controller.text.trim(); // Update second IMEI
         updateData['model'] = _productNameController.text.trim();
         // Remove description field for mobile products
         updateData['description'] = FieldValue.delete();
@@ -223,6 +285,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         updateData['description'] = _productDescriptionController.text.trim();
         // Remove mobile-specific fields for other products
         updateData['imei'] = FieldValue.delete();
+        updateData['imei2'] = FieldValue.delete(); // Remove second IMEI
         updateData['model'] = FieldValue.delete();
       }
       
@@ -235,6 +298,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       _productPriceController.clear();
       _productDescriptionController.clear();
       _imeiController.clear();
+      _imei2Controller.clear(); // Clear the second IMEI controller
       _editingProductId = null;
       _selectedProductType = 'Other';
 
@@ -535,35 +599,134 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // IMEI Field (only for Mobile)
+                        // IMEI Fields (only for Mobile)
                         if (_selectedProductType == 'Mobile') ...[
-                          TextField(
-                            controller: _imeiController,
-                            decoration: InputDecoration(
-                              labelText: 'IMEI Number *',
-                              hintText: 'Enter 15-digit IMEI',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.blue.shade300),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _imeiController,
+                                  decoration: InputDecoration(
+                                    labelText: 'IMEI Number 1 *',
+                                    hintText: 'Enter 15-digit IMEI',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.blue.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.blue.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.qr_code,
+                                      color: Colors.blue.shade600,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    counterText: '',
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 15,
+                                ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.blue.shade300),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade600,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarcodeScannerPage(
+                                          onScanned: (String scannedCode) {
+                                            setState(() {
+                                              _imeiController.text = scannedCode;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.qr_code_scanner,
+                                    color: Colors.white,
+                                  ),
+                                  tooltip: 'Scan IMEI Barcode',
+                                ),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _imei2Controller,
+                                  decoration: InputDecoration(
+                                    labelText: 'IMEI Number 2 (Optional)',
+                                    hintText: 'Enter 15-digit IMEI',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.qr_code,
+                                      color: Colors.purple.shade600,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    counterText: '',
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 15,
+                                ),
                               ),
-                              prefixIcon: Icon(
-                                Icons.qr_code,
-                                color: Colors.blue.shade600,
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.shade600,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarcodeScannerPage(
+                                          onScanned: (String scannedCode) {
+                                            setState(() {
+                                              _imei2Controller.text = scannedCode;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.qr_code_scanner,
+                                    color: Colors.white,
+                                  ),
+                                  tooltip: 'Scan IMEI Barcode',
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              counterText: '',
-                            ),
-                            keyboardType: TextInputType.number,
-                            maxLength: 15,
+                            ],
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -638,6 +801,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                             _productPriceController.clear();
                             _productDescriptionController.clear();
                             _imeiController.clear();
+                            _imei2Controller.clear(); // Clear the second IMEI controller
                             _selectedProductType = 'Other';
                             Navigator.pop(context);
                           },
@@ -707,6 +871,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     _productPriceController.text = product['price']?.toString() ?? '';
     _productDescriptionController.text = product['description'] ?? '';
     _imeiController.text = product['imei'] ?? '';
+    _imei2Controller.text = product['imei2'] ?? ''; // Set the second IMEI controller
 
     showDialog(
       context: context,
@@ -940,35 +1105,134 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // IMEI Field (only for Mobile)
+                        // IMEI Fields (only for Mobile)
                         if (_selectedProductType == 'Mobile') ...[
-                          TextField(
-                            controller: _imeiController,
-                            decoration: InputDecoration(
-                              labelText: 'IMEI Number *',
-                              hintText: 'Enter 15-digit IMEI',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.purple.shade300),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _imeiController,
+                                  decoration: InputDecoration(
+                                    labelText: 'IMEI Number 1 *',
+                                    hintText: 'Enter 15-digit IMEI',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.qr_code,
+                                      color: Colors.purple.shade600,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    counterText: '',
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 15,
+                                ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.purple.shade300),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.shade600,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarcodeScannerPage(
+                                          onScanned: (String scannedCode) {
+                                            setState(() {
+                                              _imeiController.text = scannedCode;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.qr_code_scanner,
+                                    color: Colors.white,
+                                  ),
+                                  tooltip: 'Scan IMEI Barcode',
+                                ),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _imei2Controller,
+                                  decoration: InputDecoration(
+                                    labelText: 'IMEI Number 2 (Optional)',
+                                    hintText: 'Enter 15-digit IMEI',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.qr_code,
+                                      color: Colors.purple.shade600,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    counterText: '',
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 15,
+                                ),
                               ),
-                              prefixIcon: Icon(
-                                Icons.qr_code,
-                                color: Colors.purple.shade600,
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.shade600,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarcodeScannerPage(
+                                          onScanned: (String scannedCode) {
+                                            setState(() {
+                                              _imei2Controller.text = scannedCode;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.qr_code_scanner,
+                                    color: Colors.white,
+                                  ),
+                                  tooltip: 'Scan IMEI Barcode',
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              counterText: '',
-                            ),
-                            keyboardType: TextInputType.number,
-                            maxLength: 15,
+                            ],
                           ),
                           const SizedBox(height: 16),
                         ],
@@ -1043,6 +1307,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                             _productPriceController.clear();
                             _productDescriptionController.clear();
                             _imeiController.clear();
+                            _imei2Controller.clear(); // Clear the second IMEI controller
                             _editingProductId = null;
                             _selectedProductType = 'Other';
                             Navigator.pop(context);
@@ -1403,6 +1668,15 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+                                if (product['imei2'] != null)
+                                  Text(
+                                    'IMEI 2: ${product['imei2']}',
+                                    style: TextStyle(
+                                      color: Colors.blue[600],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                               ],
                             ),
                           if (product['type'] != 'Mobile' && product['description'] != null && product['description'].isNotEmpty)
