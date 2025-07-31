@@ -171,6 +171,31 @@ class SalalaBillPage extends StatelessWidget {
                   child: pw.Text(amountInWords.toUpperCase(), style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColor(77 / 255, 77 / 255, 77 / 255, 0.6), font: customFont)),
                 ),
               ),
+              // Duplicate financial details at bottom
+              // Taxable Amount (Duplicate)
+              pw.Positioned(
+                left: 143,
+                top: 545,  // Adjust this value as needed for proper positioning
+                child: pw.Text(taxableAmount.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10, color: PdfColor(77 / 255, 77 / 255, 77 / 255, 0.6), font: customFont)),
+              ),
+              // CGST (Duplicate)
+              pw.Positioned(
+                left: 285,
+                top: 545,  // Same vertical position as other duplicate financials
+                child: pw.Text(cgst.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10, color: PdfColor(77 / 255, 77 / 255, 77 / 255, 0.6), font: customFont)),
+              ),
+              // SGST (Duplicate)
+              pw.Positioned(
+                left: 340,
+                top: 545,  // Same vertical position as other duplicate financials
+                child: pw.Text(sgst.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10, color: PdfColor(77 / 255, 77 / 255, 77 / 255, 0.6), font: customFont)),
+              ),
+              // Total Price (Duplicate)
+              pw.Positioned(
+                left: 400,
+                top: 545,  // Same vertical position as other duplicate financials
+                child: pw.Text(totalPrice.toStringAsFixed(2), style: pw.TextStyle(fontSize: 10, color: PdfColor(77 / 255, 77 / 255, 77 / 255, 0.6), font: customFont)),
+              ),
             ],
           );
         },
