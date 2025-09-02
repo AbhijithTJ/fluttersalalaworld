@@ -53,7 +53,7 @@ class _CustomerSearchPageState extends State<CustomerSearchPage>
     });
 
     try {
-      String searchTerm = _searchController.text.trim().toLowerCase();
+      String searchTerm = _searchController.text.trim().toUpperCase();
       Query query = FirebaseFirestore.instance.collection('bills');
 
       // Perform search based on selected type
