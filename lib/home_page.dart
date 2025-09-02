@@ -3,6 +3,7 @@ import 'BillingPage.dart';
 import 'CustomerSearchPage.dart';
 import 'ProductManagementPage.dart';
 import 'package:wetherapp/services/auth_service.dart';
+import 'alert_box.dart'; // Import the alert_box.dart
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -27,7 +28,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             onPressed: () async {
-              await AuthService().signOut();
+              final confirmLogout = await AlertBox.showConfirmationDialog(
+                context,
+                'Confirm Logout',
+                'Are you sure you want to log out?',
+              );
+              if (confirmLogout == true) {
+                await AuthService().signOut();
+              }
             },
             icon: const Icon(Icons.logout),
           ),
