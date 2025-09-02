@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wetherapp/wrapper.dart';
+import './splash_screen.dart';
+import './wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const Wrapper(),
+      home: SplashScreen(),
     );
   }
 }

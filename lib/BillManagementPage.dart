@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import './EditBillPage.dart';
+import './alert_box.dart';
 
 class BillManagementPage extends StatefulWidget {
   const BillManagementPage({Key? key}) : super(key: key);
@@ -36,6 +37,20 @@ class _BillManagementPageState extends State<BillManagementPage> {
         data['id'] = doc.id;
         bills.add(data);
       }
+      _allBills = bills;
+
+      // Sort bills by date in Dart
+      bills.sort((a, b) {
+        try {
+          DateTime dateA = DateFormat('dd-MM-yyyy').parse(a['date']);
+          DateTime dateB = DateFormat('dd-MM-yyyy').parse(b['date']);
+          return dateB.compareTo(dateA); // Sort in descending order
+        } catch (e) {
+          // Handle cases where date might be malformed or missing
+          return 0; // Don't change order if dates are invalid
+        }
+      });
+
       _allBills = bills;
       _filteredBills = bills;
       return bills;
@@ -109,18 +124,26 @@ class _BillManagementPageState extends State<BillManagementPage> {
   }
 
   Future<void> _deleteBill(String billId) async {
-    try {
-      await FirebaseFirestore.instance.collection('bills').doc(billId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bill deleted successfully')),
-      );
-      setState(() {
-        _billsFuture = _fetchBills();
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting bill: \$e')),
-      );
+    final bool? confirm = await AlertBox.showConfirmationDialog(
+      context,
+      'Confirm Deletion',
+      'Are you sure you want to delete this bill?',
+    );
+
+    if (confirm == true) {
+      try {
+        await FirebaseFirestore.instance.collection('bills').doc(billId).delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bill deleted successfully')),
+        );
+        setState(() {
+          _billsFuture = _fetchBills();
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting bill: \$e')),
+        );
+      }
     }
   }
 
@@ -139,24 +162,32 @@ class _BillManagementPageState extends State<BillManagementPage> {
   }
 
   void _deleteSelectedBills() async {
-    try {
-      WriteBatch batch = FirebaseFirestore.instance.batch();
-      for (String billId in _selectedBillIds) {
-        batch.delete(FirebaseFirestore.instance.collection('bills').doc(billId));
+    final bool? confirm = await AlertBox.showConfirmationDialog(
+      context,
+      'Confirm Deletion',
+      'Are you sure you want to delete ${_selectedBillIds.length} selected bills?',
+    );
+
+    if (confirm == true) {
+      try {
+        WriteBatch batch = FirebaseFirestore.instance.batch();
+        for (String billId in _selectedBillIds) {
+          batch.delete(FirebaseFirestore.instance.collection('bills').doc(billId));
+        }
+        await batch.commit();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${_selectedBillIds.length} bills deleted successfully')),
+        );
+        setState(() {
+          _isSelectionMode = false;
+          _selectedBillIds.clear();
+          _billsFuture = _fetchBills();
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting bills: $e')),
+        );
       }
-      await batch.commit();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_selectedBillIds.length} bills deleted successfully')),
-      );
-      setState(() {
-        _isSelectionMode = false;
-        _selectedBillIds.clear();
-        _billsFuture = _fetchBills();
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting bills: $e')),
-      );
     }
   }
 
