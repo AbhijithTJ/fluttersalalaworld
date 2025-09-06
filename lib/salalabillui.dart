@@ -208,7 +208,7 @@ class SalalaBillPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Salala Bill'),
+        title: const Text('AbBill App'),
       ),
       body: PdfPreview(
         build: (format) => _generatePdf(format),

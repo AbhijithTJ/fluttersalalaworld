@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Salala World',
+      title: 'Ab Bill App',
       theme: ThemeData.light().copyWith(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
