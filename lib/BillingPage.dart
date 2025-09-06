@@ -313,7 +313,7 @@ class _BillingPageState extends State<BillingPage> {
 
     // Prepare data for Firestore with final numbers
     Map<String, dynamic> billingData = {
-      'customerName': customerNameController.text,
+      'customerName': customerNameController.text.toUpperCase(),
       'customerAddress': customerAddressController.text,
       'customerPhoneNumber': customerPhoneNumberController.text,
       'billNo': finalBillNo,

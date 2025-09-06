@@ -495,7 +495,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                                         const SizedBox(width: 8),
                                         Flexible(
                                           child: Text(
-                                            'Mobile Phone',
+                                            'Mobile',
                                             style: TextStyle(
                                               color: _selectedProductType == 'Mobile'
                                                   ? Colors.green.shade700
@@ -552,7 +552,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
                                         const SizedBox(width: 8),
                                         Flexible(
                                           child: Text(
-                                            'Other Product',
+                                            'Other',
                                             style: TextStyle(
                                               color: _selectedProductType == 'Other'
                                                   ? Colors.green.shade700

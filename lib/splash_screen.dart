@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import './wrapper.dart';
+import 'package:wetherapp/golden_border_painter.dart'; // New import
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,8 +12,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   late AnimationController _shakeController;
   late Animation<Offset> _shakeAnimation;
 
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
+  late AnimationController _glossyController; // New controller for glossy effect
+  late Animation<double> _glossyAnimation; // New animation for glossy effect
 
   @override
   void initState() {
@@ -32,18 +33,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
 
-    _scaleController = AnimationController(
-      duration: const Duration(seconds: 1), // Scale animation duration
+    
+
+    // Initialize glossy effect animation
+    _glossyController = AnimationController(
+      duration: const Duration(seconds: 2), // Duration for one full cycle of the glossy effect
       vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    )..repeat(); // Repeat indefinitely
+
+    _glossyAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
-        parent: _scaleController,
-        curve: Curves.easeOut, // Smooth scale out
+        parent: _glossyController,
+        curve: Curves.linear, // Linear movement for the glossy effect
       ),
     );
-
-    _scaleController.forward(); // Start the scale animation
 
     Timer(Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -55,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     _shakeController.dispose();
-    _scaleController.dispose();
+    _glossyController.dispose(); // Dispose the new controller
     super.dispose();
   }
 
@@ -63,16 +66,31 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.white,
+        color: Colors.black,
         child: Center(
           child: AnimatedBuilder(
             animation: _shakeAnimation,
             builder: (context, child) {
               return Transform.translate(
                 offset: _shakeAnimation.value,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Image.asset('assets/images/splash.png', fit: BoxFit.cover),
+                child: Stack( // Wrap with Stack
+                  children: [
+                    Image.asset('assets/images/splash.png', fit: BoxFit.cover),
+                    Positioned.fill( // Position the CustomPaint to fill the image area
+                      child: AnimatedBuilder(
+                        animation: _glossyAnimation,
+                        builder: (context, child) {
+                          return CustomPaint(
+                            painter: GoldenBorderPainter(
+                              animationValue: _glossyAnimation.value,
+                              borderRadius: 16.0, // Match the assumed border radius
+                              borderWidth: 5.0, // Match the assumed border width
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
